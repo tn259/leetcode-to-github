@@ -55,13 +55,17 @@ class leetcode:
 
       accepted_submissions_table = self.driver.find_element_by_xpath("//table[@id='recent_ac_list']")
 
-      pdb.set_trace()
-      for row in accepted_submissions_table.find_elements_by_xpath(".//tr"):
-        pass
-        #time_str = row.find_element_by_xpath(".//td[1]").text
-        #href = row.find_element_by_xpath(".//td[2]/a/@href")
-        #print(time_str)
-        #print(href)
+      # TODO only get submissions since last scrape
+      problem_urls_to_time_submitted = {}
+      for row in accepted_submissions_table.find_elements_by_xpath(".//tbody/tr"):
+        data_elements = row.find_elements_by_xpath(".//td")
+        datetime_str = data_elements[0].text
+        problem_url = data_elements[1].find_element_by_xpath(".//a").get_attribute("href")
+        if not problem_url in problem_urls_to_time_submitted:
+          problem_urls_to_time_submitted[problem_url] = datetime_str
+
+      for k, v in problem_urls_to_time_submitted.items():
+        print(k+" -> "+v)
 
 
 def main():
