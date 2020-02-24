@@ -15,8 +15,8 @@ Scrapes leetcode for your latest accepted submissions
 class LeetcodeScraper:
   def __init__(self):
     self.driver = webdriver.Firefox()
-    self.loggedIn = False
-    self.acceptedSubmissions = {} # name to code as string
+    self.logged_in = False
+    self.accepted_submissions = {} # name to code as string
 
   """
   Login to leetcode and wait for users homepage
@@ -39,17 +39,17 @@ class LeetcodeScraper:
     except (exceptions.NoSuchElementException, exceptions.TimeoutException):
       print("Login failed")
       self.driver.close()
-      self.loggedIn = False
+      self.logged_in = False
       sys.exit(1)
 
     print("Login succeeded")
-    self.loggedIn = True
+    self.logged_in = True
 
   """
   Get latest dict of problem name to code submissions accepted
   """
   def scrape_accepted_submissions(self, latest=False):
-    if self.loggedIn:
+    if self.logged_in:
       self.driver.get("https://leetcode.com/progress")
 
       print("Getting progress page")
@@ -102,27 +102,27 @@ class LeetcodeScraper:
         for l in ace_lines:
           code += l.text + '\n'
 
-        self.acceptedSubmissions[k] = code
+        self.accepted_submissions[k] = code
 
-      pp(self.acceptedSubmissions)
+      pp(self.accepted_submissions)
 
   """
   Have we scraped new accpeted submissions?
   """
   def accepted_submissions_updated(self):
-    return len(self.acceptedSubmissions) > 0
+    return len(self.accepted_submissions) > 0
 
   """
   returns dict of accepted submissions
   """
   def get_accepted_submissions(self):
-    return self.acceptedSubmissions
+    return self.accepted_submissions
 
   """
   clear accepted submissions dict
   """
   def reset_accepted_submissions(self):
-    self.acceptedSubmissions = {}
+    self.accepted_submissions = {}
 
 def main():
   lc = LeetcodeScraper()
