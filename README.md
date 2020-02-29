@@ -4,13 +4,10 @@ Simple python program or service that polls your leetcode challenge entries and 
 An MVP implemntation will be able to
 - Browse to https://leetcode/progress
 - Scrape new Successful submissions
-- Decide what is new by comparing with local db
-- Save new submissions in files with CamelCase of problem name
-- Commit to repo with message
 - Push to github
 
-On start up steps will need to be taken to 
-
-- Login to leetcode
-- Login to github
-- create a repository or "connect" to one by syncing with the master on github and remote on disk.
+TODO
+- Scrape latest instead of all accepted submissions
+- Convert to Daemon
+- Schedule scraping in main loop every x days, hours etc
+- Dockerise with python3 env to run daemon
