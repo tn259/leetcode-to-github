@@ -97,12 +97,14 @@ class LeetcodeScraper:
           print("Submission page for "+problem+" failed to load")
           return
 
+        language = self.driver.find_element_by_id("result_language").text
+
         code = ""
         ace_lines = self.driver.find_elements_by_class_name("ace_line")
         for l in ace_lines:
           code += l.text + '\n'
 
-        self.accepted_submissions[k] = code
+        self.accepted_submissions[k] = (language, code)
 
       pp(self.accepted_submissions)
 
