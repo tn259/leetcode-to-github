@@ -16,7 +16,8 @@ class LeetcodeScraper:
   def __init__(self):
     self.driver = webdriver.Firefox()
     self.logged_in = False
-    self.accepted_submissions = {} # name to code as string
+    self.latest_accepted_submissions = {} # problem_name -> (accepted_url, language, code)
+    self.accepted_submission_urls = [] # e.g. https://leetcode.com/submissions/detail/303813534/
 
   """
   Login to leetcode and wait for users homepage
@@ -46,9 +47,9 @@ class LeetcodeScraper:
     self.logged_in = True
 
   """
-  Get latest dict of problem name to code submissions accepted
+  Get dict of problem name to code submissions accepted
   """
-  def scrape_accepted_submissions(self, latest=False):
+  def scrape_latest_accepted_submissions(self):
     if self.logged_in:
       self.driver.get("https://leetcode.com/progress")
 
@@ -72,10 +73,15 @@ class LeetcodeScraper:
 
         data_elements = row.find_elements_by_xpath(".//td")
 
-        # TODO only get submissions since last scrape
         datetime_str = data_elements[0].text
         problem_url = data_elements[1].find_element_by_xpath(".//a").get_attribute("href")
         accepted_url = data_elements[2].find_element_by_class_name("status-accepted").get_attribute("href")
+
+        if accepted_url in self.accepted_submission_urls:
+          print("Already scraped "+ accepted_url+", problem: "+problem_url)
+          break # submissions are ordered in most recent first so once we have seen one already we move on
+
+        self.accepted_submission_urls.append(accepted_url)
 
         problem_url = problem_url[:-1]
         problem_name = problem_url[problem_url.rfind('/')+1:] # https://leetcode.com/problems/A/ -> A
@@ -104,24 +110,24 @@ class LeetcodeScraper:
         for l in ace_lines:
           code += l.text + '\n'
 
-        self.accepted_submissions[k] = (language, code)
+        self.accepted_submissions[k] = (v, language, code)
 
       pp(self.accepted_submissions)
 
   """
   Have we scraped new accpeted submissions?
   """
-  def accepted_submissions_updated(self):
+  def latest_accepted_submissions_updated(self):
     return len(self.accepted_submissions) > 0
 
   """
   returns dict of accepted submissions
   """
-  def get_accepted_submissions(self):
+  def get_latest_accepted_submissions(self):
     return self.accepted_submissions
 
   """
   clear accepted submissions dict
   """
-  def reset_accepted_submissions(self):
+  def reset_latest_accepted_submissions(self):
     self.accepted_submissions = {}

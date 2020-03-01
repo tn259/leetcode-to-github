@@ -48,13 +48,16 @@ class GithubRepoHandler:
     return self.repo
 
   """
-  Takes a dict of problem_name to (language, code_content) and commits the code in a file <problem_name>.<ext>
+  Takes a dict of problem_name to (accepted_url, language, code_content) and commits the code in a file <problem_name>.<ext>
   """
   def commit(self, latest_accepted_submissions):
     for k, v in latest_accepted_submissions.items():
       problem_name = k
-      language = v[0]
-      code_contents = v[1]
+      accepted_submission_url = v[0]
+      language = v[1]
+      code_contents = v[2]
+
+      self.__update_readme(problem_name, accepted_submission_url)
 
       filename = problem_name + language_to_file_extension(language)
 
@@ -65,3 +68,12 @@ class GithubRepoHandler:
         # File already exists
         contents = self.repo.get_content(filename)
         self.repo.update_file(contents.path, "Update "+filename, code_contents, contents.sha)
+
+  """
+  Updates README with <problem_url> -> <accepted_url>
+  """
+  def __update_readme(self, problem_name, accepted_url):
+    readme_content = self.repo.get_content("README.md")
+    if not accepted_url in readme_content.content:
+      new_content = readme_content.content + "\n" + "https://leetcode.com/problems/"+problem_name+" -> "+accepted_url
+      self.repo.update_file(readme_content.path, "Add "+accepted_url+" to README", new_content, readme_content.sha)
