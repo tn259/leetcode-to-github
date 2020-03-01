@@ -31,8 +31,8 @@ class GithubRepoHandler:
   """
   def create_repo(self):
     try:  
-      self.repo = self.get_user().create_repo(LEETCODE_REPO_NAME)
-    except github.GithubException.GithubException as e:
+      self.repo = self.github.get_user().create_repo(LEETCODE_REPO_NAME)
+    except github.GithubException as e:
       print(str(e)+": possible that the repo already exists")
 
   """
@@ -40,9 +40,9 @@ class GithubRepoHandler:
   """
   def repo_exists(self):
     if not self.repo:
-      try 
+      try:
         self.repo = self.github.get_repo(LEETCODE_REPO_NAME)
-      except github.GithubException.UnknownObjectException as e:
+      except github.UnknownObjectException as e:
         print(str(e)+": repo does not exist")
 
     return self.repo
