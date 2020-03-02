@@ -110,24 +110,30 @@ class LeetcodeScraper:
         for l in ace_lines:
           code += l.text + '\n'
 
-        self.accepted_submissions[k] = (v, language, code)
+        self.latest_accepted_submissions[k] = (v, language, code)
 
-      pp(self.accepted_submissions)
+      pp(self.latest_accepted_submissions)
 
   """
   Have we scraped new accpeted submissions?
   """
   def latest_accepted_submissions_updated(self):
-    return len(self.accepted_submissions) > 0
+    return len(self.latest_accepted_submissions) > 0
 
   """
   returns dict of accepted submissions
   """
   def get_latest_accepted_submissions(self):
-    return self.accepted_submissions
+    return self.latest_accepted_submissions
 
   """
   clear accepted submissions dict
   """
   def reset_latest_accepted_submissions(self):
-    self.accepted_submissions = {}
+    self.latest_accepted_submissions = {}
+
+  """
+  set accepted submissions url list
+  """
+  def set_accepted_submission_urls(self, accepted_submission_urls):
+    self.accepted_submission_urls = accepted_submission_urls
