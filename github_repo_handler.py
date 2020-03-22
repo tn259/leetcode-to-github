@@ -1,5 +1,7 @@
 import github
 from getpass import getpass
+import base64
+import pdb
 
 LEETCODE_REPO_NAME="leetcode-accepted-submissions"
 README="README.md"
@@ -100,7 +102,8 @@ class GithubRepoHandler:
   """
   def __update_readme(self, problem_name, accepted_url):
     readme_content = self.__get_readme()
-    file_content = readme_content.content
+    file_content = base64.b64decode(readme_content.content).decode("utf-8")
+
     if not accepted_url in file_content:
-      new_content = file_content + "\n" + "https://leetcode.com/problems/"+problem_name+" -> "+accepted_url
+      new_content = file_content + "\n" + "- https://leetcode.com/problems/"+problem_name+" -> "+accepted_url
       self.repo.update_file(readme_content.path, "Add "+accepted_url+" to README", new_content, readme_content.sha)
