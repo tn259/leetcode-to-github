@@ -1,5 +1,6 @@
 from leetcode_scraper import LeetcodeScraper
 from github_repo_handler import GithubRepoHandler
+from time import sleep
 import pdb
 
 def main():
@@ -22,10 +23,10 @@ def main():
     lc_scraper.scrape_latest_accepted_submissions()
     latest = lc_scraper.get_latest_accepted_submissions()
 
-    pdb.set_trace()
-    
     gt_repo_handler.commit(latest)
     lc_scraper.reset_latest_accepted_submissions()
+
+    exit(0)
 
     sleep(5)
 
