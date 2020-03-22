@@ -77,12 +77,12 @@ class GithubRepoHandler:
   """
   def get_commited_accepted_submission_urls(self):
     readme_content = self.__get_readme()
-    file_content = readme_content.content
+    file_content = base64.b64decode(readme_content.content).decode("utf-8")
     lines = file_content.split("\n")
     urls = []
     for l in lines:
-      if len(l.split(" ")) == 3:
-        urls.append(l.split(" ")[2])
+      if "https://leetcode.com" in l and len(l.split(" ")) == 4: # "-","https://leetcode.com/problems/....","->","https://leetcode.com/submissions/detail/...."
+        urls.append(l.split(" ")[3])
     return urls
  
   """
