@@ -7,7 +7,10 @@ An MVP implemntation will be able to
 - Push to github
 
 TODO
-- Scrape latest instead of all accepted submissions
-- Convert to Daemon
+- ultimate python3 module setup
 - Schedule scraping in main loop every x days, hours etc
+- Logging
+- run as android daemon?
+- python2 to python3 linting
+- Convert to Daemon
 - Dockerise with python3 env to run daemon
