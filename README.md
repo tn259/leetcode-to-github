@@ -1,4 +1,4 @@
-# leetcode2Github
+# leetcode-to-github
 Simple python program or service that polls your leetcode challenge entries and commits them to github
 
 An MVP implemntation will be able to
