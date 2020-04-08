@@ -1,7 +1,10 @@
 from getpass import getpass
 import base64
 import pdb
+import logging
 import github
+
+logger = logging.getLogger(__name__)
 
 LEETCODE_REPO_NAME = "leetcode-accepted-submissions"
 README = "README.md"
@@ -23,6 +26,8 @@ class GithubRepoHandler:
     def __init__(self):
         self.github = None
 
+        logger.debug("Logging into Github...")
+
         username = input("Github username: ")
         password = getpass()
 
@@ -34,9 +39,10 @@ class GithubRepoHandler:
     """
     def create_repo(self):
         try:
+            logger.debug("Creating repo in github")
             self.repo = self.github.get_user().create_repo(LEETCODE_REPO_NAME)
         except github.GithubException as e:
-            print(str(e) + ": possible that the repo already exists")
+            logger.info("%s: possible that the repo already exists", str(e))
 
     """
     returns leetcode submission repo
@@ -44,9 +50,10 @@ class GithubRepoHandler:
     def repo_exists(self):
         if not self.repo:
             try:
+                logger.debug("Checking if repo already exists in Github")
                 self.repo = self.github.get_user().get_repo(LEETCODE_REPO_NAME)
             except github.UnknownObjectException as e:
-                print(str(e) + ": repo does not exist")
+                logger.info("%s: repo does not exist", str(e))
 
         return self.repo
 
@@ -64,11 +71,14 @@ class GithubRepoHandler:
 
             filename = problem_name + language_to_file_extension(language)
 
+            logger.debug("Committing %s to the repo for submission %s", filename, accepted_submission_url)
+
             # Try creating files first as it is more likely submissions will be made for new problems
             try:
                 self.repo.create_file(filename, "Create " + filename, code_contents)
             except github.GithubException:
                 # File already exists
+                logger.debug("Updating %s since a submission for %s already exists", filename, problem_name)
                 contents = self.repo.get_contents(filename)
                 self.repo.update_file(contents.path, "Update " + filename, code_contents, contents.sha)
 
@@ -76,6 +86,7 @@ class GithubRepoHandler:
     collect and return accepted_submission urls from README
     """
     def get_commited_accepted_submission_urls(self):
+        logger.debug("Retrieving accepted submitted urls from README")
         readme_content = self.__get_readme()
         file_content = base64.b64decode(readme_content.content).decode("utf-8")
         lines = file_content.split("\n")
@@ -94,6 +105,7 @@ class GithubRepoHandler:
             readme_content = self.repo.get_contents(README)
         except github.GithubException:
             # If we cannot create README here just let the exception go since there it is something fatal
+            logger.debug("Creating README")
             readme_content = self.repo.create_file(README, "Create README", "# Leetcode Accepted Submissions")['content']
 
         return readme_content
@@ -106,5 +118,6 @@ class GithubRepoHandler:
         file_content = base64.b64decode(readme_content.content).decode("utf-8")
 
         if accepted_url not in file_content:
+            logger.debug("Adding %s to README", accepted_url)
             new_content = file_content + "\n" + "- https://leetcode.com/problems/" + problem_name + " -> " + accepted_url
             self.repo.update_file(readme_content.path, "Add " + accepted_url + " to README", new_content, readme_content.sha)
