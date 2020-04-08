@@ -1,6 +1,7 @@
 from time import sleep
 import sys
 import logging
+import schedule
 from .leetcode_scraper import LeetcodeScraper
 from .github_repo_handler import GithubRepoHandler
 
@@ -10,7 +11,17 @@ logger = logging.getLogger(__name__)
 class LeetcodeToGithub:
 
     @staticmethod
-    def run():
+    def iteration(lc_scraper, gt_repo_handler):
+        logger.debug("Scraping Leetcode for latest accepted submissions...")
+        lc_scraper.scrape_latest_accepted_submissions()
+        latest = lc_scraper.get_latest_accepted_submissions()
+
+        logger.debug("Committing latest accepted submissions to Github...")
+        gt_repo_handler.commit(latest)
+        lc_scraper.reset_latest_accepted_submissions()
+
+    @staticmethod
+    def start_up():
         # setup handle to github repo
         gt_repo_handler = GithubRepoHandler()
         if not gt_repo_handler.repo_exists():
@@ -27,15 +38,16 @@ class LeetcodeToGithub:
 
         logger.debug("Startup complete")
 
+        return lc_scraper, gt_repo_handler
+
+    @staticmethod
+    def run():
+        lc_scraper, gt_repo_handler = LeetcodeToGithub.start_up()
+
+        schedule.every(30).minutes.do(LeetcodeToGithub.iteration, lc_scraper, gt_repo_handler)
+
         # go
         while True:
             # Schedule every X hours/days
-            logger.debug("Scraping Leetcode for latest accepted submissions...")
-            lc_scraper.scrape_latest_accepted_submissions()
-            latest = lc_scraper.get_latest_accepted_submissions()
-
-            logger.debug("Committing latest accepted submissions to Github...")
-            gt_repo_handler.commit(latest)
-            lc_scraper.reset_latest_accepted_submissions()
-
-            sleep(5)
+            schedule.run_pending()
+            sleep(10)
