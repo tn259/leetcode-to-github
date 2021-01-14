@@ -7,10 +7,11 @@ An MVP implemntation will be able to
 - Push to github
 
 TODO
-- ultimate python3 module setup
-- Schedule scraping in main loop every x days, hours etc
-- Logging
-- run as android daemon?
-- python2 to python3 linting
-- Convert to Daemon
+- Make logging configurable
+- Run selenium without showing the browser
+- Change to GitHub login into leetcode
 - Dockerise with python3 env to run daemon
+- Add setup.sh steps to Dockerfiles
+- Test if docker image works on another machine
+- run as android daemon?
+- python2 to python3 based syntax
