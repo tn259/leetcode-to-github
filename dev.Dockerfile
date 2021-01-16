@@ -5,6 +5,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends --yes python3-v
 
 FROM builder AS builder-venv
 
+COPY setup.sh /setup.sh
+RUN bash /setup.sh
+
 COPY requirements.txt /requirements.txt
 RUN /venv/bin/pip install -r /requirements.txt
 
