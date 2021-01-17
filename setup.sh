@@ -21,7 +21,7 @@ function install_geckodriver() {
 
   # Should have a geckodriver binary by now
   # copy to ~/.local/bin for user specific "install"
-  cp geckodriver ~/.local/bin/
+  cp geckodriver /usr/local/bin/
 }
 
 install_geckodriver 
