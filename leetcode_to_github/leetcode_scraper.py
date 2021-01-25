@@ -1,24 +1,64 @@
 from getpass import getpass
 import sys
 import logging
-# import pdb
+import pdb
 # from pprint import pprint as pp
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 from selenium.webdriver.support.ui import WebDriverWait
+from .credentials import Credentials
 
 logger = logging.getLogger(__name__)
+
+def set_chrome_options():
+    """Sets chrome options for Selenium.
+    Chrome options for headless browser is enabled.
+    """
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_prefs = {}
+    chrome_options.experimental_options["prefs"] = chrome_prefs
+    chrome_prefs["profile.default_content_settings"] = {"images": 2}
+    return chrome_options
+
 
 """
 Scrapes leetcode for your latest accepted submissions
 """
 class LeetcodeScraper:
     def __init__(self):
-        self.driver = webdriver.Firefox()
+        self.driver = webdriver.Chrome(options=set_chrome_options())
         self.latest_accepted_submissions = {}  # problem_name -> (accepted_url, language, code)
         self.accepted_submission_urls = []  # e.g. https://leetcode.com/submissions/detail/303813534/
+
+
+    """
+    Login to leetcode with github creds and wait for users homepage
+    """
+    def login_via_github(self, credentials):
+        logger.debug("Logging into Leetcode via Github...")
+
+        self.driver.get("https://leetcode.com/accounts/github/login/?next=%2F")
+
+        self.driver.find_element_by_name("login").send_keys(credentials.get_username())
+        self.driver.find_element_by_name("password").send_keys(credentials.get_password())
+        self.driver.find_element_by_class_name("btn-primary").click()
+
+        # wait for response
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "navbar-root"))
+            )
+        except (exceptions.NoSuchElementException, exceptions.TimeoutException):
+            logger.error("Login failed, TERMINATING")
+            self.driver.close()
+            sys.exit(1)
+
 
     """
     Login to leetcode and wait for users homepage

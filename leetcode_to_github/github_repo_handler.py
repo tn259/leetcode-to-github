@@ -3,6 +3,7 @@ import base64
 import pdb
 import logging
 import github
+from .credentials import Credentials
 
 logger = logging.getLogger(__name__)
 
@@ -23,15 +24,12 @@ def language_to_file_extension(language):
 Responsible for creating and maintaining the github repo with leetcode submissions
 """
 class GithubRepoHandler:
-    def __init__(self):
+    def __init__(self, credentials):
         self.github = None
 
         logger.debug("Logging into Github...")
 
-        username = input("Github username: ")
-        password = getpass()
-
-        self.github = github.Github(username, password)
+        self.github = github.Github(credentials.get_token())
         self.repo = None
 
     """

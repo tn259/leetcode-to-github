@@ -91,9 +91,6 @@ ENV/
 .idea/
 .pytest_cache/
 
-# Confidential
-credentials.*
-
 # Javascript
 node_modules/
 .config.json

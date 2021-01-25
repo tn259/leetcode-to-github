@@ -8,10 +8,7 @@ An MVP implemntation will be able to
 
 TODO
 - Make logging configurable
-- Run selenium without showing the browser
-- Change to GitHub login into leetcode
-- Dockerise with python3 env to run daemon
-- Add setup.sh steps to Dockerfiles
+- log to file that can be seen from host
 - Test if docker image works on another machine
 - run as android daemon?
 - python2 to python3 based syntax

@@ -2,10 +2,15 @@ from time import sleep
 import sys
 import logging
 import schedule
+from .credentials import Credentials
 from .leetcode_scraper import LeetcodeScraper
 from .github_repo_handler import GithubRepoHandler
 
-logging.basicConfig(level=logging.DEBUG)
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.DEBUG,
+    datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
 
 class LeetcodeToGithub:
@@ -22,8 +27,10 @@ class LeetcodeToGithub:
 
     @staticmethod
     def start_up():
+        # Get github creds
+        github_credentials = Credentials()
         # setup handle to github repo
-        gt_repo_handler = GithubRepoHandler()
+        gt_repo_handler = GithubRepoHandler(github_credentials)
         if not gt_repo_handler.repo_exists():
             gt_repo_handler.create_repo()
 
@@ -34,7 +41,7 @@ class LeetcodeToGithub:
         lc_scraper.set_accepted_submission_urls(
             gt_repo_handler.get_commited_accepted_submission_urls()
         )
-        lc_scraper.login()
+        lc_scraper.login_via_github(github_credentials)
 
         logger.debug("Startup complete")
 
