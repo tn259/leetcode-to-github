@@ -1,4 +1,5 @@
 from getpass import getpass
+from time import sleep
 import sys
 import logging
 import pdb
@@ -34,7 +35,7 @@ class LeetcodeScraper:
     def __init__(self):
         self.driver = webdriver.Chrome(options=set_chrome_options())
         self.latest_accepted_submissions = {}  # problem_name -> (accepted_url, language, code)
-        self.accepted_submission_urls = []  # e.g. https://leetcode.com/submissions/detail/303813534/
+        self.accepted_submission_urls = {}  # e.g. https://leetcode.com/submissions/detail/303813534/
 
 
     """
@@ -87,8 +88,9 @@ class LeetcodeScraper:
 
         logger.debug("Login Success!")
 
+
     """
-    Get dict of problem name to code submissions accepted
+    Get dict of problem name to code submissions accepted from progress url
     """
     def scrape_latest_accepted_submissions(self):
         self.driver.get("https://leetcode.com/progress")
@@ -107,41 +109,80 @@ class LeetcodeScraper:
         logger.debug("Progress page loaded")
 
         accepted_submissions_table = self.driver.find_element_by_xpath("//table[@id='recent_ac_list']")
+        self.__populate_submissions(accepted_submissions_table)
 
-        problem_names_to_accepted_urls = {}
-        for row in accepted_submissions_table.find_elements_by_xpath(".//tbody/tr"):
 
+    """
+    Get dict of problem name to code submissions accepted from submissions urls
+    """
+    def scrape_accepted_submissions(self):
+        submissions_page = 1
+
+        while True:
+            url = "https://leetcode.com/submissions/#/{}".format(submissions_page)
+
+            self.driver.get(url)
+
+            # wait for response
+            try:
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.ID, "submission-list-app"))
+                )
+            except (exceptions.NoSuchElementException, exceptions.TimeoutException):
+                logger.error("Submissions page {} did not load, exit".format(submissions_page))
+                sys.exit(1)
+
+            sleep(10)
+            table_elements = self.driver.find_elements_by_xpath("//table")
+            if len(table_elements) == 0:
+                logger.info("Submissions tables finished")
+                return
+
+            logger.debug("Successfully loaded {}".format(url))
+
+            submissions_table = table_elements[0]
+            self.__populate_submissions(submissions_table)
+
+            submissions_page += 1
+
+
+    def __populate_submissions(self, submissions_table):
+        new_accepted_urls = []
+        for row in submissions_table.find_elements_by_xpath("//tbody/tr"):
             data_elements = row.find_elements_by_xpath(".//td")
 
-            problem_url = data_elements[1].find_element_by_xpath(".//a").get_attribute("href")
-            accepted_url = data_elements[2].find_element_by_class_name("status-accepted").get_attribute("href")
+            text_success_elements = data_elements[2].find_elements_by_class_name("text-success")
+            if len(text_success_elements) > 0:
+                accepted_url = text_success_elements[0].get_attribute("href")
 
-            if accepted_url in self.accepted_submission_urls:
-                logger.info("Already scraped %s, problem: %s", accepted_url, problem_url)
-                break  # submissions are ordered in most recent first so once we have seen one already we move on
+                if accepted_url in self.accepted_submission_urls:
+                    logger.info("Already scraped %s", accepted_url)
+                    #break  # submissions are ordered in most recent first so once we have seen one already we move on
+                else:
+                    logger.info("Not yet scraped %s", accepted_url)
+                    self.accepted_submission_urls[accepted_url] = True
+                    new_accepted_urls += [accepted_url]
 
-            self.accepted_submission_urls.append(accepted_url)
+        for url in new_accepted_urls:
+            pdb.set_trace()
+            self.driver.get(url)
 
-            problem_url = problem_url[:-1]
-            problem_name = problem_url[problem_url.rfind('/') + 1:]  # https://leetcode.com/problems/A/ -> A
-
-            if problem_name not in problem_names_to_accepted_urls:
-                problem_names_to_accepted_urls[problem_name] = accepted_url
-
-        for k, v in problem_names_to_accepted_urls.items():
-            self.driver.get(v)
-
-            logger.debug("Getting latest submission for %s", k)
+            logger.debug("Getting latest submission %s", url)
 
             try:
                 WebDriverWait(self.driver, 10).until(
                     EC.presence_of_element_located(
-                        (By.XPATH, "/html/body/div[1]/div[3]/div[1]/div/div[2]/h3[text() = 'Submission Detail']")
+                        (By.XPATH, "//h3[text() = 'Submission Detail']")
                     )
                 )
             except (exceptions.NoSuchElementException, exceptions.TimeoutException):
-                logger.error("Submission page for %s failed to load", k)
+                logger.error("Submission page %s failed to load", url)
                 return
+
+            problem_url = self.driver.find_element_by_xpath("//h4/a").get_attribute("href")[:-1]
+            problem_name = problem_url[problem_url.rfind('/') + 1:]  # https://leetcode.com/problems/A/ -> A
+            if problem_name in self.latest_accepted_submissions:
+                continue # we will only take the latest submission for now assuming it is the latest and greatest
 
             language = self.driver.find_element_by_id("result_language").text
 
@@ -150,7 +191,8 @@ class LeetcodeScraper:
             for l in ace_lines:
                 code += l.text + '\n'
 
-            self.latest_accepted_submissions[k] = (v, language, code)
+            self.latest_accepted_submissions[problem_name] = (url, language, code)
+
 
     """
     Have we scraped new accpeted submissions?

@@ -9,7 +9,7 @@ from .github_repo_handler import GithubRepoHandler
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.DEBUG,
+    level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class LeetcodeToGithub:
     @staticmethod
     def iteration(lc_scraper, gt_repo_handler):
         logger.debug("Scraping Leetcode for latest accepted submissions...")
-        lc_scraper.scrape_latest_accepted_submissions()
+        lc_scraper.scrape_accepted_submissions()
         latest = lc_scraper.get_latest_accepted_submissions()
 
         logger.debug("Committing latest accepted submissions to Github...")
@@ -51,7 +51,7 @@ class LeetcodeToGithub:
     def run():
         lc_scraper, gt_repo_handler = LeetcodeToGithub.start_up()
 
-        schedule.every(30).minutes.do(LeetcodeToGithub.iteration, lc_scraper, gt_repo_handler)
+        schedule.every(1).minutes.do(LeetcodeToGithub.iteration, lc_scraper, gt_repo_handler)
 
         # go
         while True:

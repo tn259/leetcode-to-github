@@ -88,11 +88,11 @@ class GithubRepoHandler:
         readme_content = self.__get_readme()
         file_content = base64.b64decode(readme_content.content).decode("utf-8")
         lines = file_content.split("\n")
-        urls = []
+        urls = {}
         for l in lines:
             # "-","https://leetcode.com/problems/....","->","https://leetcode.com/submissions/detail/...."
             if "https://leetcode.com" in l and len(l.split(" ")) == 4:
-                urls.append(l.split(" ")[3])
+                urls[l.split(" ")[3]] = True
         return urls
 
     """
