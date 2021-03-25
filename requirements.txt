@@ -28,7 +28,7 @@ pylint==2.4.4
 pyparsing==2.4.6
 pytest==5.4.1
 pytest-cov==2.8.1
-PyYAML==5.3.1
+PyYAML==5.4
 requests==2.23.0
 schedule==0.6.0
 selenium==3.141.0
